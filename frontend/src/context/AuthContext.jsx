@@ -8,12 +8,21 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            // In a real app we might fetch user profile here
-            setUser({ username: "User" }); // Placeholder or decode token
-        }
-        setLoading(false);
+        const verifyUser = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await api.get('/auth/me');
+                    setUser(response.data);
+                } catch (error) {
+                    console.error("Token verification failed", error);
+                    localStorage.removeItem('token');
+                    setUser(null);
+                }
+            }
+            setLoading(false);
+        };
+        verifyUser();
     }, []);
 
     const login = async (username, password) => {
