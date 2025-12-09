@@ -10,18 +10,34 @@ const Dashboard = () => {
     const [newTopic, setNewTopic] = useState({ title: '', difficulty: 'Medium', duration_days: 7, description: '' });
     const [loading, setLoading] = useState(false);
 
+    const [dashboardData, setDashboardData] = useState(null);
+
     useEffect(() => {
-        fetchTopics();
+        const loadDashboard = async () => {
+            try {
+                const [topicsRes, progressRes] = await Promise.all([
+                    api.get('/topics/'),
+                    api.get('/progress/dashboard')
+                ]);
+                setTopics(topicsRes.data);
+                setDashboardData(progressRes.data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        loadDashboard();
     }, []);
 
-    const fetchTopics = async () => {
-        try {
-            const res = await api.get('/topics/');
-            setTopics(res.data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    // Use real chart data or fallback if empty
+    const chartData = dashboardData?.chart_data || [
+        { name: 'Mon', progress: 0 },
+        { name: 'Tue', progress: 0 },
+        { name: 'Wed', progress: 0 },
+        { name: 'Thu', progress: 0 },
+        { name: 'Fri', progress: 0 },
+        { name: 'Sat', progress: 0 },
+        { name: 'Sun', progress: 0 },
+    ];
 
     const handleCreateTopic = async (e) => {
         e.preventDefault();
@@ -30,7 +46,9 @@ const Dashboard = () => {
             await api.post('/topics/', newTopic);
             setShowModal(false);
             setNewTopic({ title: '', difficulty: 'Medium', duration_days: 7, description: '' });
-            fetchTopics();
+            // Refresh
+            const res = await api.get('/topics/');
+            setTopics(res.data);
         } catch (err) {
             alert('Failed to create topic');
             console.error(err);
@@ -39,23 +57,18 @@ const Dashboard = () => {
         }
     };
 
+
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this topic?")) return;
         try {
             await api.delete(`/topics/${id}`);
-            fetchTopics();
+            // Refresh
+            const res = await api.get('/topics/');
+            setTopics(res.data);
         } catch (err) {
             console.error(err);
         }
     };
-
-    // Dummy data for chart
-    const data = [
-        { name: 'Week 1', progress: 20 },
-        { name: 'Week 2', progress: 45 },
-        { name: 'Week 3', progress: 30 },
-        { name: 'Week 4', progress: 80 },
-    ];
 
     return (
         <div className="layout">
@@ -72,12 +85,30 @@ const Dashboard = () => {
                 </div>
             </header>
 
+            {dashboardData?.resume_module && (
+                <div className="glass-panel" style={{
+                    padding: '1.5rem', marginBottom: '2rem',
+                    background: 'linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)',
+                    border: '1px solid var(--accent)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                }}>
+                    <div>
+                        <div style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 'bold' }}>JUMP BACK IN</div>
+                        <h3 style={{ margin: '0.5rem 0' }}>{dashboardData.resume_module.title}</h3>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>From topic: {dashboardData.resume_module.topic_title}</p>
+                    </div>
+                    <Link to={`/learn/${dashboardData.resume_module.id}`} className="btn-primary" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+                        Continue <BookOpen size={18} style={{ marginLeft: '8px' }} />
+                    </Link>
+                </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
                 <div className="card">
-                    <h3>Learning Progress</h3>
+                    <h3>Learning Activity (Last 7 Days)</h3>
                     <div style={{ height: '200px', marginTop: '1rem' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={data}>
+                            <LineChart data={chartData}>
                                 <XAxis dataKey="name" stroke="#94a3b8" />
                                 <YAxis stroke="#94a3b8" />
                                 <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
@@ -94,8 +125,8 @@ const Dashboard = () => {
                             <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{topics.length}</div>
                         </div>
                         <div className="glass-panel" style={{ padding: '1rem' }}>
-                            <div style={{ color: 'var(--text-secondary)' }}>Hours Learned</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>12.5</div>
+                            <div style={{ color: 'var(--text-secondary)' }}>Estimated Hours Learned</div>
+                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{dashboardData?.stats?.estimated_hours || 0}</div>
                         </div>
                     </div>
                 </div>

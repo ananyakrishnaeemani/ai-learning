@@ -127,10 +127,25 @@ def delete_topic(topic_id: int, user: User = Depends(get_current_user), session:
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
     
-    # Cascade delete (SQLModel/SQLAlchemy might handle this if configured, but let's be explicit manually or rely on DB CASCADE)
-    # For simplicity in SQLite with SQLModel defaults, we might need manual cleanup if relationships aren't set to cascade.
-    # We will just delete the topic and let the frontend handle the refresh.
-    # In a real app, delete modules, slides, progress etc.
+    # Check if there are related records to delete manually to avoid FK constraints
+    # Delete Progress
+    session.query(Progress).filter(Progress.topic_id == topic_id).delete()
+    
+    # Delete Modules (and their children: Slides, Quizzes)
+    # We need to iterate or delete by subquery. 
+    # Delete Quizzes and Slides first
+    modules = session.query(Module).filter(Module.topic_id == topic_id).all()
+    for mod in modules:
+        # Delete Quizzes
+        # We need to import Quiz and Slide model at top if not available, usually we have them.
+        # Assuming we can just delete via relationship or query. 
+        # But safest is manual delete if we don't have CASCADE set up in DB.
+        from ..models import Quiz, Slide
+        session.query(Quiz).filter(Quiz.module_id == mod.id).delete()
+        session.query(Slide).filter(Slide.module_id == mod.id).delete()
+    
+    session.query(Module).filter(Module.topic_id == topic_id).delete()
+    
     session.delete(topic)
     session.commit()
     return {"ok": True}

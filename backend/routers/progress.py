@@ -110,6 +110,46 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             "percent": percent
         })
 
+    # 4. Estimated Hours (Assuming 20 mins aka 0.33 hours per module)
+    estimated_hours = round(modules_completed * 0.33, 1)
+
+    # 5. Last 7 Days Activity (for Dashboard Chart)
+    # Format: [{"name": "Mon", "progress": count}, ...]
+    chart_data = []
+    today = datetime.utcnow().date()
+    for i in range(6, -1, -1):
+        d = today - timedelta(days=i)
+        # Count progress for this day
+        count = 0
+        if user_progress:
+            count = sum(1 for p in user_progress if p.completed_at and p.completed_at.date() == d)
+        
+        chart_data.append({
+            "name": d.strftime("%a"), # Mon, Tue...
+            "progress": count
+        })
+        
+    # 6. Resume Module (Next module after the last completed one)
+    resume_module = None
+    if user_progress:
+        # Get most recently completed
+        last_completed = sorted([p for p in user_progress if p.completed_at], key=lambda x: x.completed_at, reverse=True)
+        if last_completed:
+            last_p = last_completed[0]
+            # Find next module in this topic
+            next_mod = session.query(Module).filter(
+                Module.topic_id == last_p.topic_id,
+                Module.order_index > session.get(Module, last_p.module_id).order_index
+            ).order_by(Module.order_index).first()
+            
+            if next_mod:
+                topic_title = session.get(Topic, last_p.topic_id).title
+                resume_module = {
+                    "id": next_mod.id,
+                    "title": next_mod.title,
+                    "topic_title": topic_title
+                }
+
     return {
         "stats": {
             "total_topics": total_topics,
@@ -119,10 +159,13 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             "streak": streak,
             "total_xp": total_xp,
             "topics_started": topics_started_count,
-            "topics_done": topics_done_count
+            "topics_done": topics_done_count,
+            "estimated_hours": estimated_hours
         },
         "heatmap": activity_dates,
-        "topics": topic_stats
+        "topics": topic_stats,
+        "chart_data": chart_data,
+        "resume_module": resume_module
     }
 
 @router.get("/ai-insights")
