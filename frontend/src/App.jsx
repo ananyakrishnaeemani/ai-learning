@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Roadmap from './pages/Roadmap';
 import LearningSession from './pages/LearningSession';
+import Progress from './pages/Progress';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -32,6 +33,11 @@ const AppRoutes = () => {
       <Route path="/learn/:moduleId" element={
         <ProtectedRoute>
           <LearningSession />
+        </ProtectedRoute>
+      } />
+      <Route path="/progress" element={
+        <ProtectedRoute>
+          <Progress />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

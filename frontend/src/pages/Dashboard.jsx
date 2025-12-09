@@ -92,6 +92,9 @@ const Dashboard = () => {
                             <div style={{ color: 'var(--text-secondary)' }}>Hours Learned</div>
                             <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>12.5</div>
                         </div>
+                        <Link to="/progress" className="btn-secondary" style={{ textAlign: 'center', textDecoration: 'none' }}>
+                            View Full Progress
+                        </Link>
                     </div>
                 </div>
             </div>
