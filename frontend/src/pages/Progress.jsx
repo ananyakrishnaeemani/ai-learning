@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import StatsCard from '../components/StatsCard';
 import ActivityHeatmap from '../components/ActivityHeatmap';
-import { Trophy, Target, Award, Zap, BrainCircuit, ArrowRight } from 'lucide-react';
+import { Trophy, Target, Award, Zap, BrainCircuit, ArrowRight, User, BookOpen, CheckCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Progress = () => {
     const [data, setData] = useState(null);
@@ -32,12 +33,22 @@ const Progress = () => {
     if (!data) return <div className="layout">Failed to load data.</div>;
 
     const { stats, heatmap, topics } = data;
+    const { user } = useAuth();
 
     return (
         <div className="layout">
-            <div style={{ marginBottom: '2rem' }}>
-                <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Your Progress</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Track your journey and see how far you've come.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{
+                    width: '60px', height: '60px', borderRadius: '50%',
+                    background: 'var(--accent)', color: 'white',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <User size={32} />
+                </div>
+                <div>
+                    <h1 style={{ fontSize: '2rem', margin: 0 }}>Hello, {user?.username || 'Learner'}!</h1>
+                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Here is your progress report.</p>
+                </div>
             </div>
 
             {/* AI Insights Section */}
@@ -66,9 +77,10 @@ const Progress = () => {
             {/* Stats Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                 <StatsCard title="Streak" value={`${stats.streak} Days`} icon={<Zap />} color="#F59E0B" />
+                <StatsCard title="Total XP" value={stats.total_xp} icon={<Award />} color="#3B82F6" />
                 <StatsCard title="Modules Done" value={stats.modules_completed} icon={<Target />} color="#10B981" />
                 <StatsCard title="Avg Score" value={`${stats.avg_score}%`} icon={<Trophy />} color="#8B5CF6" />
-                <StatsCard title="Total XP" value={stats.total_xp} icon={<Award />} color="#3B82F6" />
+                <StatsCard title="Topics Completed" value={`${stats.topics_done} / ${stats.total_topics}`} icon={<CheckCircle size={24} />} color="#6366F1" />
             </div>
 
             {/* Heatmap & topic list layout */}

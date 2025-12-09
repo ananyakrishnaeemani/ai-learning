@@ -78,6 +78,9 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
     topic_stats = []
     total_xp = 0
     
+    topics_started_count = 0
+    topics_done_count = 0
+
     for topic in user.topics:
         t_modules_total = len(topic.modules)
         # Count completed modules for this topic
@@ -94,6 +97,11 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
         
         percent = int((t_completed / t_modules_total) * 100) if t_modules_total > 0 else 0
         
+        if percent > 0:
+            topics_started_count += 1
+        if percent == 100:
+            topics_done_count += 1
+        
         topic_stats.append({
             "id": topic.id,
             "title": topic.title,
@@ -109,7 +117,9 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             "total_modules": total_modules_enrolled,
             "avg_score": avg_score,
             "streak": streak,
-            "total_xp": total_xp
+            "total_xp": total_xp,
+            "topics_started": topics_started_count,
+            "topics_done": topics_done_count
         },
         "heatmap": activity_dates,
         "topics": topic_stats
