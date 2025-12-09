@@ -81,7 +81,7 @@ async def generate_module_content_ai(topic: str, module_title: str):
     4. Target about 5-7 slides.
     
     "quizzes": A LIST of objects (5 questions) representing the quiz for this module, each with:
-    - "question": string
+    - "question": string (Must be based SPECIFICALLY on the content of the slides above.)
     - "options": list of strings (4 options)
     - "correct_answer": string (must strictly match one of the options)
     
