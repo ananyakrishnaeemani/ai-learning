@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import ChatMentor from './pages/ChatMentor';
 import MockExamConfig from './pages/MockExamConfig';
 import MockExamSession from './pages/MockExamSession';
+import ReviewMockExam from './pages/ReviewMockExam';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -62,6 +63,11 @@ const AppRoutes = () => {
       <Route path="/mock-exam-session/:examId" element={
         <ProtectedRoute>
           <MockExamSession />
+        </ProtectedRoute>
+      } />
+      <Route path="/mock-exam-review/:attemptId" element={
+        <ProtectedRoute>
+          <ReviewMockExam />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

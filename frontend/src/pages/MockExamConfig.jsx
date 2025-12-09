@@ -143,7 +143,6 @@ const MockExamConfig = () => {
                 </form>
             </div>
 
-            {/* History Section */}
             <div style={{ width: '100%', maxWidth: '800px', marginTop: '3rem', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0, color: '#cbd5e1' }}>
@@ -154,12 +153,6 @@ const MockExamConfig = () => {
                             const fetchHistory = async () => {
                                 try {
                                     const res = await api.get('/mock-exam/history');
-                                    console.log("Fetched history:", res.data);
-                                    if (Array.isArray(res.data)) {
-                                        alert(`Fetched ${res.data.length} items from backend.`);
-                                    } else {
-                                        alert(`Fetched return type: ${typeof res.data}`);
-                                    }
                                     setHistory(res.data);
                                     toast.success("History refreshed");
                                 } catch (err) {
@@ -172,19 +165,6 @@ const MockExamConfig = () => {
                         style={{ background: 'transparent', border: '1px solid #475569', color: '#94a3b8', padding: '0.25rem 0.75rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
                     >
                         Refresh
-                    </button>
-                    <button
-                        onClick={async () => {
-                            try {
-                                const res = await api.get('/mock-exam/history');
-                                alert("RAW /history response:\n" + JSON.stringify(res.data, null, 2));
-                            } catch (e) {
-                                alert("Debug failed: " + e.message);
-                            }
-                        }}
-                        style={{ marginLeft: '10px', background: 'rgba(255,0,0,0.2)', border: '1px solid red', color: 'red', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
-                    >
-                        Debug /history
                     </button>
                 </div>
                 {history.length === 0 ? (
@@ -201,6 +181,7 @@ const MockExamConfig = () => {
                                     <th style={{ padding: '1rem' }}>Score</th>
                                     <th style={{ padding: '1rem' }}>Result</th>
                                     <th style={{ padding: '1rem' }}>Date</th>
+                                    <th style={{ padding: '1rem' }}>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -220,6 +201,18 @@ const MockExamConfig = () => {
                                         </td>
                                         <td style={{ padding: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
                                             {new Date(att.date).toLocaleDateString()}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <button
+                                                onClick={() => navigate(`/mock-exam-review/${att.id}`)}
+                                                style={{
+                                                    background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)',
+                                                    color: '#38bdf8', padding: '0.25rem 0.75rem', borderRadius: '4px',
+                                                    cursor: 'pointer', fontSize: '0.8rem'
+                                                }}
+                                            >
+                                                Review
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
