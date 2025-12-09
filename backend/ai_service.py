@@ -68,14 +68,14 @@ async def generate_module_content_ai(topic: str, module_title: str):
     prompt = f"""
     Generate detailed educational content for the module "{module_title}" of the topic "{topic}".
     
-    Return a valid JSON object with two keys: "slides" and "quiz".
+    Return a valid JSON object with two keys: "slides" and "quizzes".
     
     "slides": A list of objects, each with:
     - "content": string (Markdown format with headings, bullet points, etc. Make it detailed.)
     - "order_index": integer (1-based)
     Target about 4-6 slides.
     
-    "quiz": AN OBJECT (not a list) representing one quiz for this module with:
+    "quizzes": A LIST of objects (5 questions) representing the quiz for this module, each with:
     - "question": string
     - "options": list of strings (4 options)
     - "correct_answer": string (must strictly match one of the options)
@@ -100,9 +100,11 @@ async def generate_module_content_ai(topic: str, module_title: str):
             "slides": [
                 {"content": "# Error \n Could not generate content.", "order_index": 1}
             ],
-            "quiz": {
-                "question": "Error?",
-                "options": ["Yes", "No", "Maybe", "Unsure"],
-                "correct_answer": "Yes"
-            }
+            "quizzes": [
+                {
+                    "question": "Error generating quiz?",
+                    "options": ["Yes", "No", "Maybe", "Unsure"],
+                    "correct_answer": "Yes"
+                }
+            ]
         }

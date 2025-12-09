@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session
-from typing import List
+from typing import List, Optional
 from ..database import get_session
 from ..models import User, Topic, Module, Progress
 from ..auth import get_current_user
@@ -29,6 +29,7 @@ class ModuleRead(BaseModel):
     description: str
     order_index: int
     is_completed: bool
+    score: Optional[int] = 0
 
 class TopicWithModules(TopicRead):
     modules: List[ModuleRead]
@@ -71,7 +72,8 @@ async def create_topic(topic_in: TopicCreate, user: User = Depends(get_current_u
             user_id=user.id,
             topic_id=db_topic.id,
             module_id=db_module.id,
-            is_completed=False
+            is_completed=False,
+            score=0
         )
         session.add(prog)
     
@@ -93,16 +95,18 @@ def get_topic_details(topic_id: int, user: User = Depends(get_current_user), ses
     # To keep it simple, we list modules. Completion status is in Progress table.
     # Let's simple check progress table map.
     
-    progress_map = {p.module_id: p.is_completed for p in topic.progress}
+    progress_map = {p.module_id: p for p in topic.progress}
     
     modules_resp = []
     for m in topic.modules:
+        prog = progress_map.get(m.id)
         modules_resp.append(ModuleRead(
             id=m.id,
             title=m.title,
             description=m.description,
             order_index=m.order_index,
-            is_completed=progress_map.get(m.id, False)
+            is_completed=prog.is_completed if prog else False,
+            score=prog.score if prog else 0
         ))
     
     # Sort by order

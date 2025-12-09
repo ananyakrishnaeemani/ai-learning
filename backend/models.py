@@ -34,7 +34,7 @@ class Module(SQLModel, table=True):
     topic: Topic = Relationship(back_populates="modules")
     
     slides: List["Slide"] = Relationship(back_populates="module")
-    quiz: Optional["Quiz"] = Relationship(back_populates="module")
+    quizzes: List["Quiz"] = Relationship(back_populates="module")
     
     # helper for checking completion for a specific user requires a join, 
     # but we will track it in Progress table generally.
@@ -54,7 +54,7 @@ class Quiz(SQLModel, table=True):
     correct_answer: str
     
     module_id: int = Field(foreign_key="module.id")
-    module: Module = Relationship(back_populates="quiz")
+    module: Module = Relationship(back_populates="quizzes")
 
 class Progress(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

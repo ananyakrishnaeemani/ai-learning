@@ -28,10 +28,14 @@ class ModuleContent(BaseModel):
     module_id: int
     title: str
     slides: List[SlideRead]
-    quiz: Optional[QuizRead]
+    quizzes: List[QuizRead]
+
+class QuizSubmitItem(BaseModel):
+    quiz_id: int
+    selected_option: str
 
 class QuizSubmit(BaseModel):
-    selected_option: str
+    answers: List[QuizSubmitItem]
 
 @router.get("/module/{module_id}", response_model=ModuleContent)
 async def get_module_content(module_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
@@ -61,12 +65,12 @@ async def get_module_content(module_id: int, user: User = Depends(get_current_us
             session.add(db_slide)
         
         # Save quiz
-        quiz_data = content_data.get("quiz")
-        if quiz_data:
+        quizzes_data = content_data.get("quizzes", [])
+        for q_data in quizzes_data:
             db_quiz = Quiz(
-                question=quiz_data.get("question"),
-                options=json.dumps(quiz_data.get("options")), # Store as JSON string
-                correct_answer=quiz_data.get("correct_answer"),
+                question=q_data.get("question"),
+                options=json.dumps(q_data.get("options")), # Store as JSON string
+                correct_answer=q_data.get("correct_answer"),
                 module_id=module.id
             )
             session.add(db_quiz)
@@ -78,37 +82,21 @@ async def get_module_content(module_id: int, user: User = Depends(get_current_us
     slides_resp = [SlideRead(id=s.id, content=s.content, order_index=s.order_index) for s in module.slides]
     slides_resp.sort(key=lambda x: x.order_index)
     
-    quiz_resp = None
-    if module.quiz:
-        # We assume one quiz per module for now
-        # Actually module.quiz is a list relation in models? 
-        # Wait, in models I defined: quiz: Optional["Quiz"] = Relationship(back_populates="module")
-        # But One-to-One is tricky in SQLModel if not careful, usually it creates a list unless uselist=False.
-        # Let's assume it might be a list in `module.quiz` if I didn't set sa_relationship_kwargs={"uselist": False}
-        # But I defined `quiz` as a single object type hint? 
-        # SQLModel relationships are list by default for the 'many' side.
-        # Let's treat it safely.
-        
-        # Actually looking at models.py: 
-        # quiz: Optional["Quiz"] = Relationship(back_populates="module")
-        # In the Quiz model: module: Module = Relationship(back_populates="quiz")
-        # This implies One-to-Many (One Module has Many Quizzes) unless specified.
-        # I'll retrieve the first quiz.
-        
-        # Hotfix: I'll just query Quiz table directly for safety.
-        q = session.query(Quiz).filter(Quiz.module_id == module.id).first()
-        if q:
-            quiz_resp = QuizRead(
-                id=q.id,
-                question=q.question,
-                options=json.loads(q.options)
-            )
+    quizzes_resp = []
+    # Explicitly query to ensure we get them all
+    db_quizzes = session.query(Quiz).filter(Quiz.module_id == module.id).all()
+    for q in db_quizzes:
+        quizzes_resp.append(QuizRead(
+            id=q.id,
+            question=q.question,
+            options=json.loads(q.options)
+        ))
             
     return ModuleContent(
         module_id=module.id,
         title=module.title,
         slides=slides_resp,
-        quiz=quiz_resp
+        quizzes=quizzes_resp
     )
 
 @router.post("/module/{module_id}/complete_slide")
@@ -123,13 +111,33 @@ def submit_quiz(module_id: int, submit: QuizSubmit, user: User = Depends(get_cur
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
     
-    # Get the quiz
-    q = session.query(Quiz).filter(Quiz.module_id == module.id).first()
-    if not q:
-        raise HTTPException(status_code=404, detail="Quiz not found")
+    # Get all quizzes
+    db_quizzes = session.query(Quiz).filter(Quiz.module_id == module.id).all()
+    quiz_map = {q.id: q for q in db_quizzes}
     
-    is_correct = (submit.selected_option == q.correct_answer)
+    correct_count = 0
+    total_questions = len(db_quizzes)
     
+    results = []
+    
+    for ans in submit.answers:
+        q = quiz_map.get(ans.quiz_id)
+        if not q:
+            continue
+            
+        is_correct = (ans.selected_option == q.correct_answer)
+        if is_correct:
+            correct_count += 1
+            
+        results.append({
+            "quiz_id": q.id,
+            "correct": is_correct,
+            "correct_answer": q.correct_answer
+        })
+        
+    score_percentage = int((correct_count / total_questions) * 100) if total_questions > 0 else 0
+    passed = score_percentage >= 80
+
     # Update progress
     progress = session.query(Progress).filter(
         Progress.module_id == module_id, 
@@ -137,15 +145,18 @@ def submit_quiz(module_id: int, submit: QuizSubmit, user: User = Depends(get_cur
     ).first()
     
     if progress:
-        progress.is_completed = True # Mark module as completed regardless of score? Or only if correct?
-        # User requirement: "I'll be writing the quiz and the first module is done"
-        # Let's say completion requires attempting the quiz.
-        if is_correct:
-            progress.score = 100
-        else:
-            progress.score = 0
+        # Only mark completed if passed
+        if passed:
+            progress.is_completed = True 
+        
+        # Always update score to the latest attempt (or max? let's do latest for retry logic)
+        progress.score = score_percentage
         progress.completed_at = datetime.utcnow()
         session.add(progress)
         session.commit()
     
-    return {"correct": is_correct, "correct_answer": q.correct_answer}
+    return {
+        "passed": passed,
+        "score": score_percentage,
+        "results": results
+    }
