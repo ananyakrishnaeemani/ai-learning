@@ -151,3 +151,46 @@ async def generate_chat_title(first_message: str):
     except Exception as e:
         print(f"Error generating title: {e}")
         return "New Chat"
+
+async def generate_mock_exam(topic: str, difficulty: str, count: int):
+    prompt = f"""
+    Generate a mock exam for the topic "{topic}".
+    Difficulty: {difficulty}.
+    Number of questions: {count}.
+    
+    Return a valid JSON object with a key "questions" containing a list of {count} question objects.
+    
+    The questions should be a mix of the following types:
+    1. "mcq": Multiple Choice (4 options). Keys: "type" ("mcq"), "question", "options" (list of strings), "correct_answer" (string, must match one option).
+    2. "code": Coding scenario. Keys: "type" ("code"), "question" (problem description), "test_case_input" (string example), "test_case_output" (string expected output).
+    3. "boolean": True/False. Keys: "type" ("boolean"), "question", "correct_answer" ("True" or "False").
+    
+    Requirements:
+    - For "code" type, the question must be solvable with a short function or script.
+    - Ensure questions correspond to the "{difficulty}" level.
+    - Do not return markdown, only valid JSON.
+    """
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are a specific exam generator. Return pure JSON."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"}
+        )
+        content = response.choices[0].message.content
+        return json.loads(content)
+    except Exception as e:
+        print(f"Error generating mock exam: {e}")
+        # Fallback
+        return {
+            "questions": [
+                {
+                    "type": "mcq",
+                    "question": "Failed to generate exam. Which of the following is true?",
+                    "options": ["AI is down", "Network error", "Both", "None"],
+                    "correct_answer": "AI is down"
+                }
+            ]
+        }

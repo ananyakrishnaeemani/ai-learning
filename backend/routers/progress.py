@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 from ..database import get_session
-from ..models import User, Progress, Topic, Module
+from ..models import User, Progress, Topic, Module, MockAttempt
 from ..auth import get_current_user
 from ..ai_service import client, MODEL
 import json
@@ -16,32 +16,21 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
     total_topics = len(user.topics)
     
     # Calculate modules completed and total
-    # This requires querying all topics -> all modules
-    # OR joining Progress table.
-    
-    # Let's get all progress records for this user
     user_progress = session.query(Progress).filter(Progress.user_id == user.id).all()
     
     modules_completed = sum(1 for p in user_progress if p.is_completed)
-    
-    # Total modules available in enrolled topics
-    # We can query Module count joining with Topic where topic.user_id == user.id
-    # but since user.topics is loaded, let's iterate (might be slow if huge data, but fine for MVP)
     total_modules_enrolled = sum(len(t.modules) for t in user.topics)
     
-    # Average Score (only for completed quizzes or attempted ones)
+    # Average Score
     scores = [p.score for p in user_progress if p.score is not None and p.score > 0]
     avg_score = int(sum(scores) / len(scores)) if scores else 0
     
     # 2. Streak Calculation & Heatmap Data
-    # Get unique dates from completed_at
     activity_dates = []
     if user_progress:
-        # Filter out None dates
         valid_dates = [p.completed_at.date() for p in user_progress if p.completed_at]
         valid_dates.sort()
         
-        # Count frequency for heatmap
         date_counts = {}
         for d in valid_dates:
             d_str = d.isoformat()
@@ -49,16 +38,12 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             
         activity_dates = [{"date": k, "count": v} for k, v in date_counts.items()]
     
-    # Calculate current streak
-    # Iterate backwards from today
     streak = 0
     today = datetime.utcnow().date()
-    # Check if active today
     if any(p.completed_at and p.completed_at.date() == today for p in user_progress):
         streak = 1
         check_date = today - timedelta(days=1)
     else:
-        # Check yesterday
         check_date = today - timedelta(days=1)
         if any(p.completed_at and p.completed_at.date() == check_date for p in user_progress):
             streak = 1
@@ -66,7 +51,6 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
         else:
             streak = 0
             
-    # Continue counting back if streak > 0
     if streak > 0:
         unique_dates_set = {p.completed_at.date() for p in user_progress if p.completed_at}
         while check_date in unique_dates_set:
@@ -74,22 +58,24 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             check_date -= timedelta(days=1)
 
     # 3. Topic Breakdown
-    # We want list of topics with completion %
     topic_stats = []
     total_xp = 0
+    
+    # Mock Exam XP
+    mock_attempts = session.query(MockAttempt).filter(MockAttempt.user_id == user.id, MockAttempt.passed == True).all()
+    for att in mock_attempts:
+        total_xp += (att.score * 5) # 5 points per question roughly? Or just use score directly. Let's use score * 10 for meaningful XP.
+        # Just use score as base xp
     
     topics_started_count = 0
     topics_done_count = 0
 
     for topic in user.topics:
         t_modules_total = len(topic.modules)
-        # Count completed modules for this topic
         t_completed_records = [p for p in user_progress if p.topic_id == topic.id and p.is_completed]
         t_completed = len(t_completed_records)
         
-        # XP Calculation:
-        # Base XP: 10 per completed module
-        # Bonus XP: Score / 10
+        # XP Calculation
         for p in t_completed_records:
             total_xp += 10
             if p.score:
@@ -110,33 +96,29 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             "percent": percent
         })
 
-    # 4. Estimated Hours (Assuming 20 mins aka 0.33 hours per module)
+    # 4. Estimated Hours
     estimated_hours = round(modules_completed * 0.33, 1)
 
-    # 5. Last 7 Days Activity (for Dashboard Chart)
-    # Format: [{"name": "Mon", "progress": count}, ...]
+    # 5. Last 7 Days Activity
     chart_data = []
-    today = datetime.utcnow().date()
+    today_date = datetime.utcnow().date()
     for i in range(6, -1, -1):
-        d = today - timedelta(days=i)
-        # Count progress for this day
+        d = today_date - timedelta(days=i)
         count = 0
         if user_progress:
             count = sum(1 for p in user_progress if p.completed_at and p.completed_at.date() == d)
         
         chart_data.append({
-            "name": d.strftime("%a"), # Mon, Tue...
+            "name": d.strftime("%a"),
             "progress": count
         })
         
-    # 6. Resume Module (Next module after the last completed one)
+    # 6. Resume Module
     resume_module = None
     if user_progress:
-        # Get most recently completed
         last_completed = sorted([p for p in user_progress if p.completed_at], key=lambda x: x.completed_at, reverse=True)
         if last_completed:
             last_p = last_completed[0]
-            # Find next module in this topic
             next_mod = session.query(Module).filter(
                 Module.topic_id == last_p.topic_id,
                 Module.order_index > session.get(Module, last_p.module_id).order_index
@@ -170,7 +152,6 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
 
 @router.get("/ai-insights")
 async def get_ai_insights(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    # Fetch recent failed/low score quizzes to Analyze weakness
     recent_activity = session.query(Progress).filter(
         Progress.user_id == user.id,
         Progress.score != None
@@ -179,10 +160,8 @@ async def get_ai_insights(user: User = Depends(get_current_user), session: Sessi
     if not recent_activity:
         return {"message": "Start learning to get AI insights!"}
         
-    # Prepare data for AI
     data_summary = []
     for p in recent_activity:
-        # Need module title
         mod = session.get(Module, p.module_id)
         data_summary.append(f"Module: {mod.title}, Score: {p.score}%")
         

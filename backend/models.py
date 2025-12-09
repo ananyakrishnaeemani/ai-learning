@@ -84,3 +84,21 @@ class ChatMessage(SQLModel, table=True):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     
     session: ChatSession = Relationship(back_populates="messages")
+
+class MockExam(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    topic_name: str
+    difficulty: str
+    questions_json: str # JSON string of list of questions
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MockAttempt(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    mock_exam_id: int = Field(foreign_key="mockexam.id")
+    user_id: int = Field(foreign_key="user.id")
+    score: int
+    total_questions: int
+    answers_json: str # JSON string of user answers
+    passed: bool
+    created_at: datetime = Field(default_factory=datetime.utcnow)

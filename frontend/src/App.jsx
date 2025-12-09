@@ -8,6 +8,8 @@ import LearningSession from './pages/LearningSession';
 import Progress from './pages/Progress';
 import Profile from './pages/Profile';
 import ChatMentor from './pages/ChatMentor';
+import MockExamConfig from './pages/MockExamConfig';
+import MockExamSession from './pages/MockExamSession';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -50,6 +52,16 @@ const AppRoutes = () => {
       <Route path="/chat" element={
         <ProtectedRoute>
           <ChatMentor />
+        </ProtectedRoute>
+      } />
+      <Route path="/mock-exam" element={
+        <ProtectedRoute>
+          <MockExamConfig />
+        </ProtectedRoute>
+      } />
+      <Route path="/mock-exam-session/:examId" element={
+        <ProtectedRoute>
+          <MockExamSession />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
