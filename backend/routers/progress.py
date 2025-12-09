@@ -76,10 +76,21 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
     # 3. Topic Breakdown
     # We want list of topics with completion %
     topic_stats = []
+    total_xp = 0
+    
     for topic in user.topics:
         t_modules_total = len(topic.modules)
         # Count completed modules for this topic
-        t_completed = sum(1 for p in user_progress if p.topic_id == topic.id and p.is_completed)
+        t_completed_records = [p for p in user_progress if p.topic_id == topic.id and p.is_completed]
+        t_completed = len(t_completed_records)
+        
+        # XP Calculation:
+        # Base XP: 10 per completed module
+        # Bonus XP: Score / 10
+        for p in t_completed_records:
+            total_xp += 10
+            if p.score:
+                total_xp += int(p.score / 10)
         
         percent = int((t_completed / t_modules_total) * 100) if t_modules_total > 0 else 0
         
@@ -97,7 +108,8 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             "modules_completed": modules_completed,
             "total_modules": total_modules_enrolled,
             "avg_score": avg_score,
-            "streak": streak
+            "streak": streak,
+            "total_xp": total_xp
         },
         "heatmap": activity_dates,
         "topics": topic_stats

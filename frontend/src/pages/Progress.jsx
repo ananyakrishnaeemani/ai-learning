@@ -68,7 +68,7 @@ const Progress = () => {
                 <StatsCard title="Streak" value={`${stats.streak} Days`} icon={<Zap />} color="#F59E0B" />
                 <StatsCard title="Modules Done" value={stats.modules_completed} icon={<Target />} color="#10B981" />
                 <StatsCard title="Avg Score" value={`${stats.avg_score}%`} icon={<Trophy />} color="#8B5CF6" />
-                <StatsCard title="Topics" value={stats.total_topics} icon={<Award />} color="#3B82F6" />
+                <StatsCard title="Total XP" value={stats.total_xp} icon={<Award />} color="#3B82F6" />
             </div>
 
             {/* Heatmap & topic list layout */}

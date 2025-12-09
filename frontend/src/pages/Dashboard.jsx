@@ -61,10 +61,15 @@ const Dashboard = () => {
         <div className="layout">
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
                 <h1>My Learning Dashboard</h1>
-                <button className="btn-primary" onClick={() => setShowModal(true)}>
-                    <Plus size={18} style={{ marginRight: '8px' }} />
-                    New Topic
-                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <Link to="/progress" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                        Your Progress
+                    </Link>
+                    <button className="btn-primary" onClick={() => setShowModal(true)}>
+                        <Plus size={18} style={{ marginRight: '8px' }} />
+                        New Topic
+                    </button>
+                </div>
             </header>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
@@ -92,9 +97,6 @@ const Dashboard = () => {
                             <div style={{ color: 'var(--text-secondary)' }}>Hours Learned</div>
                             <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>12.5</div>
                         </div>
-                        <Link to="/progress" className="btn-secondary" style={{ textAlign: 'center', textDecoration: 'none' }}>
-                            View Full Progress
-                        </Link>
                     </div>
                 </div>
             </div>

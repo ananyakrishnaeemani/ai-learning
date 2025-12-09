@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import Markdown from 'react-markdown';
 import { ChevronRight, ChevronLeft, Check, RefreshCcw, BookOpen, ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
 
 const LearningSession = () => {
     const { moduleId } = useParams();
@@ -98,8 +100,25 @@ const LearningSession = () => {
             const res = await api.post(`/learning/module/${moduleId}/submit_quiz`, { answers: answersList });
             setQuizResult(res.data);
             setMode('result');
+
+            if (res.data.passed) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                toast.success(`Module Completed! +${10 + Math.floor(res.data.score / 10)} XP`, {
+                    duration: 5000,
+                    icon: '🎉',
+                });
+            } else {
+                toast.error("Don't give up! Try again to unlock the next module.", {
+                    icon: '💪'
+                });
+            }
         } catch (err) {
             console.error(err);
+            toast.error("Error submitting quiz");
             alert("Error submitting quiz");
         }
     };
