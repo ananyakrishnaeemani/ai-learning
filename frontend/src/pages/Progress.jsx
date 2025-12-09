@@ -5,11 +5,13 @@ import StatsCard from '../components/StatsCard';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import { Trophy, Target, Award, Zap, BrainCircuit, ArrowRight, User, BookOpen, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 const Progress = () => {
     const [data, setData] = useState(null);
     const [aiInsights, setAiInsights] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     useEffect(() => {
         const loadDat = async () => {
@@ -33,23 +35,16 @@ const Progress = () => {
     if (!data) return <div className="layout">Failed to load data.</div>;
 
     const { stats, heatmap, topics } = data;
-    const { user } = useAuth();
 
     return (
         <div className="layout">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                <div style={{
-                    width: '60px', height: '60px', borderRadius: '50%',
-                    background: 'var(--accent)', color: 'white',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                    <User size={32} />
-                </div>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div>
                     <h1 style={{ fontSize: '2rem', margin: 0 }}>Hello, {user?.username || 'Learner'}!</h1>
                     <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Here is your progress report.</p>
                 </div>
-            </div>
+                <ProfileDropdown />
+            </header>
 
             {/* AI Insights Section */}
             {aiInsights && aiInsights.motivation && (

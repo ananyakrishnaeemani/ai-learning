@@ -59,3 +59,28 @@ class UserRead(BaseModel):
 @router.get("/me", response_model=UserRead)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+class UserUpdate(BaseModel):
+    email: str
+
+@router.put("/me", response_model=UserRead)
+def update_user_me(user_update: UserUpdate, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    current_user.email = user_update.email
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    return current_user
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.post("/change-password")
+def change_password(pwd_change: PasswordChange, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    if not verify_password(pwd_change.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    current_user.hashed_password = get_password_hash(pwd_change.new_password)
+    session.add(current_user)
+    session.commit()
+    return {"message": "Password updated successfully"}

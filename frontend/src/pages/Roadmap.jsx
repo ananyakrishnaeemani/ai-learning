@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { CheckCircle, Circle, ArrowDown, Lock } from 'lucide-react';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 const Roadmap = () => {
     const { topicId } = useParams();
@@ -23,7 +24,10 @@ const Roadmap = () => {
 
     return (
         <div className="layout">
-            <Link to="/dashboard" style={{ color: 'var(--text-secondary)', textDecoration: 'none', marginBottom: '1rem', display: 'block' }}>&larr; Back to Dashboard</Link>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <Link to="/dashboard" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>&larr; Back to Dashboard</Link>
+                <ProfileDropdown />
+            </div>
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
                 <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{topic.title} Roadmap</h1>
                 <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>{topic.description}</p>

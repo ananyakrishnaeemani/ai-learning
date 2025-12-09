@@ -3,6 +3,7 @@ import api from '../api/axios';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Plus, Trash2, BookOpen } from 'lucide-react';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 const Dashboard = () => {
     const [topics, setTopics] = useState([]);
@@ -74,7 +75,7 @@ const Dashboard = () => {
         <div className="layout">
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
                 <h1>My Learning Dashboard</h1>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <Link to="/progress" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                         Your Progress
                     </Link>
@@ -82,6 +83,7 @@ const Dashboard = () => {
                         <Plus size={18} style={{ marginRight: '8px' }} />
                         New Topic
                     </button>
+                    <ProfileDropdown />
                 </div>
             </header>
 
