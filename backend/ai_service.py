@@ -71,9 +71,14 @@ async def generate_module_content_ai(topic: str, module_title: str):
     Return a valid JSON object with two keys: "slides" and "quizzes".
     
     "slides": A list of objects, each with:
-    - "content": string (Markdown format with headings, bullet points, etc. Make it detailed.)
+    - "content": string (Markdown format with headings, bullet points, etc. Make it VERY DETAILED and COMPREHENSIVE.)
     - "order_index": integer (1-based)
-    Target about 4-6 slides.
+    
+    CRITICAL INSTRUCTIONS FOR CONTENT:
+    1. Include REAL-WORLD EXAMPLES to explain abstract concepts.
+    2. Include CODE SNIPPETS (in appropriate languages) for technical topics.
+    3. Ensure high information density. Each slide should be substantial.
+    4. Target about 5-7 slides.
     
     "quizzes": A LIST of objects (5 questions) representing the quiz for this module, each with:
     - "question": string
