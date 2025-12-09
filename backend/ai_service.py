@@ -113,3 +113,41 @@ async def generate_module_content_ai(topic: str, module_title: str):
                 }
             ]
         }
+
+async def generate_chat_response(messages: list):
+    """
+    messages: list of {"role":Str, "content":Str}
+    """
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=messages
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error generating chat: {e}")
+        return "I'm sorry, I'm currently unable to process your request. Please try again later."
+
+async def generate_chat_title(first_message: str):
+    """
+    Generates a short 3-5 word title based on the first user message.
+    """
+    prompt = f"""
+    Summarize the following user message into a short, concise title (3-5 words) for a chat session.
+    Do not use quotes. Just the title.
+    
+    User Message: "{first_message}"
+    """
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant. Return only the title text."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=20
+        )
+        return response.choices[0].message.content.strip().replace('"', '')
+    except Exception as e:
+        print(f"Error generating title: {e}")
+        return "New Chat"

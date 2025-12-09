@@ -7,6 +7,7 @@ import Roadmap from './pages/Roadmap';
 import LearningSession from './pages/LearningSession';
 import Progress from './pages/Progress';
 import Profile from './pages/Profile';
+import ChatMentor from './pages/ChatMentor';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -44,6 +45,11 @@ const AppRoutes = () => {
       <Route path="/profile" element={
         <ProtectedRoute>
           <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/chat" element={
+        <ProtectedRoute>
+          <ChatMentor />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

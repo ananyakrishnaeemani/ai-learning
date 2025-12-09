@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Plus, Trash2, BookOpen } from 'lucide-react';
+import { Plus, Trash2, BookOpen, MessageSquare } from 'lucide-react';
 import ProfileDropdown from '../components/ProfileDropdown';
 
 const Dashboard = () => {
@@ -78,6 +78,9 @@ const Dashboard = () => {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <Link to="/progress" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                         Your Progress
+                    </Link>
+                    <Link to="/chat" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', background: 'rgba(139, 92, 246, 0.1)', color: 'var(--accent)', border: '1px solid var(--accent)' }}>
+                        <MessageSquare size={18} style={{ marginRight: '8px' }} /> AI Mentor
                     </Link>
                     <button className="btn-primary" onClick={() => setShowModal(true)}>
                         <Plus size={18} style={{ marginRight: '8px' }} />

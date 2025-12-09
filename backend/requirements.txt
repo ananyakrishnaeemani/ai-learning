@@ -6,3 +6,4 @@ passlib[bcrypt]
 openai
 python-multipart
 python-dotenv
+pypdf

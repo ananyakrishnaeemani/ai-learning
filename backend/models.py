@@ -67,3 +67,20 @@ class Progress(SQLModel, table=True):
 
     topic: Topic = Relationship(back_populates="progress")
     # We can add relationships to User and Module if needed for deep queries
+
+class ChatSession(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    title: str = Field(default="New Chat")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    messages: List["ChatMessage"] = Relationship(back_populates="session")
+
+class ChatMessage(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    session_id: int = Field(foreign_key="chatsession.id")
+    role: str # user, assistant, system
+    content: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    
+    session: ChatSession = Relationship(back_populates="messages")
