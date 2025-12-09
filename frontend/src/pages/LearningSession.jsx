@@ -174,7 +174,7 @@ const LearningSession = () => {
                             }} />
                         </div>
 
-                        <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>
+                        <p style={{ fontSize: '1.2rem', marginBottom: '2rem', color: 'white' }}>
                             {content.quizzes[currentQuizIndex].question}
                         </p>
 
@@ -192,7 +192,8 @@ const LearningSession = () => {
                                             background: isSelected ? 'rgba(139, 92, 246, 0.3)' : 'transparent',
                                             border: isSelected ? '1px solid var(--accent)' : '1px solid transparent',
                                             cursor: 'pointer',
-                                            transition: 'all 0.2s'
+                                            transition: 'all 0.2s',
+                                            color: 'white'
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center' }}>

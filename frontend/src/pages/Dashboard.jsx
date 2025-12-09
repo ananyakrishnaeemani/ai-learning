@@ -73,69 +73,96 @@ const Dashboard = () => {
 
     return (
         <div className="layout">
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-                <h1>My Learning Dashboard</h1>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <Link to="/progress" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-                        Your Progress
-                    </Link>
-                    <Link to="/mock-exam" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', background: 'rgba(236, 72, 153, 0.1)', color: '#f472b6', border: '1px solid #f472b6' }}>
-                        <PenTool size={18} style={{ marginRight: '8px' }} /> Mock Exam
-                    </Link>
-                    <Link to="/chat" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', background: 'rgba(139, 92, 246, 0.1)', color: 'var(--accent)', border: '1px solid var(--accent)' }}>
-                        <MessageSquare size={18} style={{ marginRight: '8px' }} /> AI Mentor
-                    </Link>
-                    <button className="btn-primary" onClick={() => setShowModal(true)}>
-                        <Plus size={18} style={{ marginRight: '8px' }} />
-                        New Topic
-                    </button>
-                    <ProfileDropdown />
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '2rem',
+                paddingBottom: '1rem',
+                borderBottom: '1px solid rgba(255,255,255,0.05)'
+            }}>
+                <div>
+                    <h1 style={{ fontSize: '1.8rem', margin: 0, fontWeight: '700', letterSpacing: '-0.02em' }}>Dashboard</h1>
+                    <p style={{ color: '#94a3b8', margin: '0.25rem 0 0 0' }}>Overview of your learning journey</p>
                 </div>
+                <button
+                    className="btn-primary"
+                    onClick={() => setShowModal(true)}
+                    style={{
+                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.4)',
+                        display: 'flex', alignItems: 'center', gap: '8px'
+                    }}
+                >
+                    <Plus size={18} /> New Roadmap
+                </button>
             </header>
 
             {dashboardData?.resume_module && (
                 <div className="glass-panel" style={{
                     padding: '1.5rem', marginBottom: '2rem',
-                    background: 'linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)',
-                    border: '1px solid var(--accent)',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)',
+                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                 }}>
-                    <div>
-                        <div style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 'bold' }}>JUMP BACK IN</div>
-                        <h3 style={{ margin: '0.5rem 0' }}>{dashboardData.resume_module.title}</h3>
-                        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>From topic: {dashboardData.resume_module.topic_title}</p>
+                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                        <div style={{
+                            background: 'rgba(139, 92, 246, 0.2)',
+                            padding: '1rem',
+                            borderRadius: '12px',
+                            color: '#a78bfa'
+                        }}>
+                            <BookOpen size={24} />
+                        </div>
+                        <div>
+                            <div style={{ color: '#a78bfa', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase' }}>Continue Learning</div>
+                            <h3 style={{ margin: '0.25rem 0 0.25rem 0', fontSize: '1.2rem' }}>{dashboardData.resume_module.title}</h3>
+                            <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.9rem' }}>{dashboardData.resume_module.topic_title}</p>
+                        </div>
                     </div>
-                    <Link to={`/learn/${dashboardData.resume_module.id}`} className="btn-primary" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-                        Continue <BookOpen size={18} style={{ marginLeft: '8px' }} />
+                    <Link to={`/learn/${dashboardData.resume_module.id}`} className="btn-primary" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', background: 'white', color: '#0f172a' }}>
+                        Resume <BookOpen size={16} style={{ marginLeft: '8px' }} />
                     </Link>
                 </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
-                <div className="card">
-                    <h3>Learning Activity (Last 7 Days)</h3>
-                    <div style={{ height: '200px', marginTop: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '3rem' }}>
+                <div className="glass-panel" style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <h3 style={{ margin: 0 }}>Activity</h3>
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Last 7 Days</span>
+                    </div>
+                    <div style={{ height: '220px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={chartData}>
-                                <XAxis dataKey="name" stroke="#94a3b8" />
-                                <YAxis stroke="#94a3b8" />
-                                <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
-                                <Line type="monotone" dataKey="progress" stroke="#8b5cf6" strokeWidth={3} />
+                                <XAxis dataKey="name" stroke="#475569" tick={{ fill: '#94a3b8', fontSize: 12 }} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#475569" tick={{ fill: '#94a3b8', fontSize: 12 }} tickLine={false} axisLine={false} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc' }}
+                                    itemStyle={{ color: '#a78bfa' }}
+                                    cursor={{ stroke: '#334155' }}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="progress"
+                                    stroke="#8b5cf6"
+                                    strokeWidth={3}
+                                    dot={{ r: 4, fill: '#8b5cf6', strokeWidth: 0 }}
+                                    activeDot={{ r: 6, strokeWidth: 0 }}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
-                <div className="card">
-                    <h3>Stats</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-                        <div className="glass-panel" style={{ padding: '1rem' }}>
-                            <div style={{ color: 'var(--text-secondary)' }}>Active Topics</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{topics.length}</div>
-                        </div>
-                        <div className="glass-panel" style={{ padding: '1rem' }}>
-                            <div style={{ color: 'var(--text-secondary)' }}>Estimated Hours Learned</div>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{dashboardData?.stats?.estimated_hours || 0}</div>
-                        </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div className="glass-panel" style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Active Roadmaps</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'white' }}>{topics.length}</div>
+                    </div>
+                    <div className="glass-panel" style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Hours Learned</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: '800', color: '#34d399' }}>{dashboardData?.stats?.estimated_hours || 0}</div>
                     </div>
                 </div>
             </div>
