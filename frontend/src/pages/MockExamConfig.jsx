@@ -172,52 +172,97 @@ const MockExamConfig = () => {
                         No history found. Take your first exam!
                     </div>
                 ) : (
-                    <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                            <thead style={{ background: 'rgba(0,0,0,0.2)', color: '#94a3b8', textTransform: 'uppercase', fontSize: '0.85rem' }}>
-                                <tr>
-                                    <th style={{ padding: '1rem' }}>Topic</th>
-                                    <th style={{ padding: '1rem' }}>Difficulty</th>
-                                    <th style={{ padding: '1rem' }}>Score</th>
-                                    <th style={{ padding: '1rem' }}>Result</th>
-                                    <th style={{ padding: '1rem' }}>Date</th>
-                                    <th style={{ padding: '1rem' }}>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {history.map(att => (
-                                    <tr key={att.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <td style={{ padding: '1rem', fontWeight: '500' }}>{att.topic}</td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', borderRadius: '4px', background: 'rgba(255,255,255,0.1)' }}>
-                                                {att.difficulty}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>{att.score} / {att.total}</td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{ color: att.passed ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>
-                                                {att.passed ? 'Passed' : 'Failed'}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
-                                            {new Date(att.date).toLocaleDateString()}
-                                        </td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <button
-                                                onClick={() => navigate(`/mock-exam-review/${att.id}`)}
-                                                style={{
-                                                    background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)',
-                                                    color: '#38bdf8', padding: '0.25rem 0.75rem', borderRadius: '4px',
-                                                    cursor: 'pointer', fontSize: '0.8rem'
-                                                }}
-                                            >
-                                                Review
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                        {history.map(att => (
+                            <div key={att.id} className="glass-panel" style={{
+                                padding: '1.5rem',
+                                position: 'relative',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem',
+                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                cursor: 'default'
+                            }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = 'translateY(-5px)';
+                                    e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div>
+                                        <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#f8fafc' }}>{att.topic}</h4>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            padding: '0.25rem 0.75rem',
+                                            borderRadius: '999px',
+                                            background: att.difficulty === 'Expert' ? 'rgba(239, 68, 68, 0.2)' :
+                                                att.difficulty === 'Hard' ? 'rgba(249, 115, 22, 0.2)' :
+                                                    att.difficulty === 'Medium' ? 'rgba(234, 179, 8, 0.2)' : 'rgba(34, 197, 94, 0.2)',
+                                            color: att.difficulty === 'Expert' ? '#fca5a5' :
+                                                att.difficulty === 'Hard' ? '#fdba74' :
+                                                    att.difficulty === 'Medium' ? '#fde047' : '#86efac',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            {att.difficulty}
+                                        </span>
+                                    </div>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-end',
+                                        gap: '0.25rem'
+                                    }}>
+                                        <span style={{
+                                            fontSize: '1.25rem',
+                                            fontWeight: 'bold',
+                                            color: att.passed ? '#4ade80' : '#f87171'
+                                        }}>
+                                            {att.score}/{att.total}
+                                        </span>
+                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                            {att.passed ? 'PASSED' : 'FAILED'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', width: '100%' }} />
+
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fbbf24' }}>
+                                        <BrainCircuit size={16} />
+                                        <span style={{ fontWeight: 'bold' }}>+{att.xp || 0} XP</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                        {new Date(att.date).toLocaleDateString()}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => navigate(`/mock-exam-review/${att.id}`)}
+                                    style={{
+                                        marginTop: 'auto',
+                                        background: 'rgba(56, 189, 248, 0.1)',
+                                        border: '1px solid rgba(56, 189, 248, 0.2)',
+                                        color: '#38bdf8',
+                                        padding: '0.75rem',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.9rem',
+                                        fontWeight: '500',
+                                        transition: 'background 0.2s',
+                                        width: '100%'
+                                    }}
+                                    onMouseEnter={e => e.target.style.background = 'rgba(56, 189, 248, 0.2)'}
+                                    onMouseLeave={e => e.target.style.background = 'rgba(56, 189, 248, 0.1)'}
+                                >
+                                    Review Answers
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>

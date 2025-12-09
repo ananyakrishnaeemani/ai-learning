@@ -76,6 +76,7 @@ const Progress = () => {
                 <StatsCard title="Modules Done" value={stats.modules_completed} icon={<Target />} color="#10B981" />
                 <StatsCard title="Avg Score" value={`${stats.avg_score}%`} icon={<Trophy />} color="#8B5CF6" />
                 <StatsCard title="Topics Completed" value={`${stats.topics_done} / ${stats.total_topics}`} icon={<CheckCircle size={24} />} color="#6366F1" />
+                <StatsCard title="Mock Exams" value={`${stats.mock_exams_passed || 0} / ${stats.mock_exams_taken || 0}`} icon={<BrainCircuit />} color="#EC4899" />
             </div>
 
             {/* Heatmap & topic list layout */}

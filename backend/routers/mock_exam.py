@@ -118,7 +118,7 @@ async def submit_exam(
         "score": score,
         "total": total,
         "passed": passed,
-        "xp_earned": score if passed else 0,
+        "xp_earned": (score * 10) if passed else 0,
     }
 
 # ------- IMPORTANT: history & attempt BEFORE /{exam_id} -------- #
@@ -147,6 +147,9 @@ async def get_exam_history(
         except Exception:
             pass
             
+        # Standard XP: 10 per correct answer if passed
+        xp = (att.score * 10) if att.passed else 0
+            
         history.append({
             "id": att.id,
             "topic": topic_name,
@@ -155,6 +158,7 @@ async def get_exam_history(
             "total": att.total_questions,
             "passed": att.passed,
             "date": att.created_at,
+            "xp": xp
         })
             
     return history

@@ -62,10 +62,11 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
     total_xp = 0
     
     # Mock Exam XP
-    mock_attempts = session.query(MockAttempt).filter(MockAttempt.user_id == user.id, MockAttempt.passed == True).all()
-    for att in mock_attempts:
-        total_xp += (att.score * 5) # 5 points per question roughly? Or just use score directly. Let's use score * 10 for meaningful XP.
-        # Just use score as base xp
+    mock_attempts = session.query(MockAttempt).filter(MockAttempt.user_id == user.id).all()
+    mock_passed = [m for m in mock_attempts if m.passed]
+    
+    for att in mock_passed:
+        total_xp += (att.score * 10) 
     
     topics_started_count = 0
     topics_done_count = 0
@@ -106,7 +107,11 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
         d = today_date - timedelta(days=i)
         count = 0
         if user_progress:
-            count = sum(1 for p in user_progress if p.completed_at and p.completed_at.date() == d)
+            count += sum(1 for p in user_progress if p.completed_at and p.completed_at.date() == d)
+        
+        # Add mock exams to daily activity
+        if mock_attempts:
+            count += sum(1 for m in mock_attempts if m.created_at and m.created_at.date() == d)
         
         chart_data.append({
             "name": d.strftime("%a"),
@@ -142,7 +147,9 @@ async def get_progress_dashboard(user: User = Depends(get_current_user), session
             "total_xp": total_xp,
             "topics_started": topics_started_count,
             "topics_done": topics_done_count,
-            "estimated_hours": estimated_hours
+            "estimated_hours": estimated_hours,
+            "mock_exams_taken": len(mock_attempts),
+            "mock_exams_passed": len(mock_passed)
         },
         "heatmap": activity_dates,
         "topics": topic_stats,
